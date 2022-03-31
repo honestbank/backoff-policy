@@ -1,0 +1,13 @@
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: backoff-policy
+  description: provides an easy way to serve up external traffic for proxy like services
+    annotations:
+      github.com/project-slug: honestbank/backoff-policy
+      sonarqube.org/project-key: honestbank_backoff-policy
+spec:
+  type: library
+  lifecycle:
+    owner: "user:cyberhck"
