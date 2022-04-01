@@ -4,9 +4,9 @@ kind: Component
 metadata:
   name: backoff-policy
   description: provides a way to backoff during retry scenarios
-    annotations:
-      github.com/project-slug: honestbank/backoff-policy
-      sonarqube.org/project-key: honestbank_backoff-policy
+  annotations:
+    github.com/project-slug: honestbank/backoff-policy
+    sonarqube.org/project-key: honestbank_backoff-policy
 spec:
   type: library
   lifecycle:
