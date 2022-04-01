@@ -1,3 +1,5 @@
+# This is managed workflow, do not change this file in downstream repo
+
 name: go-tests
 
 on:
@@ -5,6 +7,9 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+
+env:
+  GOPRIVATE: github.com/honestbank
 
 jobs:
   build:
@@ -45,6 +50,11 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         continue-on-error: true
+  trivy_scan:
+    name: trivy-scan
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "add trivy scan" # todo
   release:
     name: semantic-release
     runs-on: ubuntu-latest
@@ -55,6 +65,9 @@ jobs:
         with:
           go-version: "1.16"
         id: go
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '17'
       - name: Check out code into the Go module directory
         uses: actions/checkout@v2
         with:
@@ -62,10 +75,10 @@ jobs:
       - name: release
         uses: cycjimmy/semantic-release-action@v2
         env:
-          GITHUB_TOKEN: ${{ secrets.ENGINEERING_GITHUB_PERSONAL_ACCESS_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          semantic_version: 16
+          semantic_version: 18
           extra_plugins: |
-            @semantic-release/git@7.0.18
-            @semantic-release/exec@3.3.8
-            @semantic-release/changelog@3.0.0
+            @semantic-release/git@10.0.1
+            @semantic-release/exec@6.0.2
+            @semantic-release/changelog@6.0.1

@@ -1,0 +1,13 @@
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: backoff-policy
+  description: provides a way to backoff during retry scenarios
+  annotations:
+    github.com/project-slug: honestbank/backoff-policy
+    sonarqube.org/project-key: honestbank_backoff-policy
+spec:
+  type: library
+  lifecycle: prod
+  owner: "user:cyberhck"
