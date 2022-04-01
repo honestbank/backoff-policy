@@ -50,6 +50,11 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         continue-on-error: true
+  trivy_scan:
+    name: trivy-scan
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "add trivy scan" # todo
   release:
     name: semantic-release
     runs-on: ubuntu-latest
