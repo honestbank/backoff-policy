@@ -9,5 +9,5 @@ metadata:
     sonarqube.org/project-key: honestbank_backoff-policy
 spec:
   type: library
-  lifecycle: prod
+  lifecycle: production
   owner: "user:cyberhck"
