@@ -34,6 +34,7 @@
 
 # NUCLEAR OPTION - EXCLUDES ALL JETBRAINS IDE FILES
 **/.idea/**
+.idea/**
 
 # User-specific stuff
 .idea/**/workspace.xml
@@ -458,3 +459,6 @@ mocks
 # test log file
 coverage.txt
 coverage.tmp
+
+# Grafana tempo files (https://grafana.com/oss/tempo/)
+**/tempo-data/**
