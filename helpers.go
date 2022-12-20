@@ -7,5 +7,5 @@ import (
 )
 
 func NewExponentialBackoffPolicy(duration time.Duration, maxCount int) BackoffPolicy {
-	return NewBackoff(policies.GetExponentialPolicy(1.5, duration, maxCount))
+	return NewBackoff(policies.GetExponentialPolicy(1.1, duration, maxCount))
 }
