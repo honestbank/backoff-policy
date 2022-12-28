@@ -21,7 +21,7 @@ func process() error {
 }
 
 func main() {
-	policy := backoff_policy.NewExponentialBackoffPolicy(time.Millisecond * 100, 15)
+	policy := backoff_policy.NewExponentialBackoffPolicy(1.1, time.Millisecond * 100, 5)
 	queue := getQueue()
 	for ; ; {
 		policy.Execute(func(marker backoff_policy.Marker) {
