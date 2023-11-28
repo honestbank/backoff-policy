@@ -1,3 +1,4 @@
+# nonk8s
 ---
 apiVersion: backstage.io/v1alpha1
 kind: Component
@@ -6,7 +7,10 @@ metadata:
   description: provides a way to backoff during retry scenarios
   annotations:
     github.com/project-slug: honestbank/backoff-policy
+    github.com/team-slug: honestbank/backend-engineers
     sonarqube.org/project-key: honestbank_backoff-policy
+  tags:
+    - language:golang
 spec:
   type: library
   lifecycle: production
