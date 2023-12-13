@@ -13,6 +13,8 @@ if [ ! -f $META_DATA_FILE ]; then
   "design_document": "https://example.com",
   "runbook": "https://example.com",
   "manual_dependencies": [],
+  "type": "application",
+  "lifecycle": "production",
   "example-service-name": {
     "tags" : [
       "language:golang",
@@ -81,6 +83,16 @@ if [[ -z $DESIGN_DOCUMENT || -z $RUNBOOK ||  "$DESIGN_DOCUMENT" == "https://exam
   exit 1
 fi
 
+TYPE=$(jq -r '.type' $META_DATA_FILE)
+if [[ -z $TYPE ]]; then
+  TYPE="application"
+fi
+
+LIFECYCLE=$(jq -r '.lifecycle' $META_DATA_FILE)
+if [[ -z $LIFECYCLE || "$LIFECYCLE" == "null" ]]; then
+  LIFECYCLE="production"
+fi
+
 # Loop through each subfolder in the charts directory
 for SERVICE in $SERVICE_NAMES; do
     # Default dependencies
@@ -114,7 +126,7 @@ apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
   name: $SERVICE
-  description: The $SERVICE workload
+  description: The $SERVICE $TYPE
   annotations:
     github.com/project-slug: honestbank/$REPO_NAME
     github.com/team-slug: honestbank/$GH_TEAM
@@ -131,14 +143,24 @@ done)
       title: Runbook
       icon: help
 spec:
-  type: application
-  lifecycle: production
+  type: $TYPE
+  lifecycle: $LIFECYCLE
   owner: group:$SQUAD_NAME-squad
-  dependsOn:
+$(
+ if (( ${#DEPENDENCIES[@]} > 0 )); then
+  echo "dependsOn:"
+ fi
+)
 $(for resource in "${DEPENDENCIES[@]}"; do
     echo "    - $resource"
 done)
 EOF
 done
 
+# Fix line termination
+file_content=$(<"$OUTPUT_FILE")
+fixed_content="${file_content%$'\n'}"
+echo "$fixed_content" > "$OUTPUT_FILE"
+
 echo "File generated: $OUTPUT_FILE"
+
