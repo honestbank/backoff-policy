@@ -1,0 +1,13 @@
+{
+  "squad_name": "self-service",
+  "design_document": "https://www.notion.so/honestbank/backoff-policy-4333ddff5acb4791a5697908d4ada3f2?pvs=4",
+  "runbook": "https://www.notion.so/honestbank/backoff-policy-4333ddff5acb4791a5697908d4ada3f2?pvs=4",
+  "manual_dependencies": [],
+  "example-service-name": {
+    "tags" : [
+      "language:golang",
+      "idempotent:false",
+      "stateless:false"
+    ]
+  }
+}
