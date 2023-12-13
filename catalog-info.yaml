@@ -3,11 +3,22 @@ apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
   name: backoff-policy
-  description: provides a way to backoff during retry scenarios
+  description: The backoff-policy library
   annotations:
     github.com/project-slug: honestbank/backoff-policy
+    github.com/team-slug: honestbank/backend-engineers
     sonarqube.org/project-key: honestbank_backoff-policy
+  tags:
+    - language:golang
+  links:
+    - url: https://www.notion.so/honestbank/backoff-policy-4333ddff5acb4791a5697908d4ada3f2?pvs=4
+      title: Design Document
+      icon: menubook
+    - url: https://www.notion.so/honestbank/backoff-policy-4333ddff5acb4791a5697908d4ada3f2?pvs=4
+      title: Runbook
+      icon: help
 spec:
   type: library
   lifecycle: production
-  owner: group:acquisition-squad
+  owner: group:self-service-squad
+
