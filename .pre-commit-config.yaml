@@ -1,35 +1,60 @@
 # DO NOT CHANGE. This file is being managed from a central repository
 # To know more simply visit https://github.com/honestbank/.github/blob/main/docs/about.md
 
+default_install_hook_types: [ pre-commit, commit-msg ]
+
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.5.0
     hooks:
       - id: end-of-file-fixer
+        stages: [commit]
       - id: trailing-whitespace
+        stages: [commit]
       - id: check-yaml
-        args: [ '--allow-multiple-documents' ]
+        stages: [commit]
+        args: ["--allow-multiple-documents"]
       - id: detect-aws-credentials
-        args: [ '--allow-missing-credentials' ]
+        stages: [commit]
+        args: ["--allow-missing-credentials"]
   - repo: https://github.com/golangci/golangci-lint
-    rev: v1.54.2
+    rev: v1.57.2
     hooks:
       - id: golangci-lint
+        stages: [commit]
+        args: ["--timeout=10m"]
   - repo: https://github.com/TekWizely/pre-commit-golang
     rev: v1.0.0-rc.1
     hooks:
       - id: go-imports
+        stages: [commit]
   - repo: https://github.com/gitguardian/ggshield
-    rev: v1.19.1
+    rev: v1.26.0
     hooks:
       - id: ggshield
         language: python
         stages: [commit]
-        args: [ 'secret', 'scan', 'pre-commit' ]
+        args: ["secret", "scan", "pre-commit"]
   - repo: local
     hooks:
+      - id: generate-secrets-loader
+        name: generate-secrets-loader
+        entry: ./secrets-loader.generator.sh
+        language: script
+        stages: [commit]
       - id: generate-catalog
         name: generate-catalog
         entry: ./catalog-info.generator.sh
         language: script
         pass_filenames: false
+        stages: [commit]
+      - id: commit-msg-spell-check
+        name: commit-msg-spell-check
+        entry: ./spell-check.sh
+        language: script
+        stages: ["commit-msg"]
+      - id: append-ticket-id
+        name: Append Ticket ID to Commit Message
+        entry: ./append-ticket-id.sh
+        language: script
+        stages: [ commit-msg ]

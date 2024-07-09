@@ -12,7 +12,7 @@
     },
     "issues":  {
         "exclude-rules": {
-            "path": "/",
+            "path": "_test.go",
             "linters": ["errcheck"]
         }
     },
@@ -28,7 +28,6 @@
             "goimports",
             "gosimple",
             "govet",
-            "ifshort",
             "ineffassign",
             "makezero",
             "misspell",
