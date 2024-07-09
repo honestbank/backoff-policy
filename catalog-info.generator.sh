@@ -10,11 +10,13 @@ if [ ! -f $META_DATA_FILE ]; then
   cat << EOF >> $META_DATA_FILE
 {
   "squad_name": "example-squad",
+  "dashboard": "https://example.com",
   "design_document": "https://example.com",
   "runbook": "https://example.com",
   "manual_dependencies": [],
   "type": "application",
   "lifecycle": "production",
+  "manual_service_names": [],
   "example-service-name": {
     "tags" : [
       "language:golang",
@@ -30,30 +32,49 @@ fi
 OUTPUT_FILE="catalog-info.yaml"
 : > $OUTPUT_FILE # Clear the output file before appending
 
+typeset -A SQUAD_ALIAS
+SQUAD_ALIAS[acquisition]=acquisition-squad
+SQUAD_ALIAS[decisioning]=mlops-squad
+SQUAD_ALIAS[decisioning-squad]=mlops-squad
+SQUAD_ALIAS[mlops]=mlops-squad
+SQUAD_ALIAS[self-service]=self-service-squad
+SQUAD_ALIAS[spend]=spend-squad
+
 typeset -A TEAM_MAP
 TEAM_MAP[acquisition-squad]=backend-engineers
-TEAM_MAP[acquisition]=backend-engineers
 TEAM_MAP[data-engineering]=data-squad
-TEAM_MAP[decisioning]=backend-engineers
 TEAM_MAP[devops]=devops-engineers
 TEAM_MAP[internal-infra]=devops-engineers
+TEAM_MAP[mlops-squad]=backend-engineers
 TEAM_MAP[self-service-squad]=backend-engineers
-TEAM_MAP[self-service]=backend-engineers
 TEAM_MAP[spend-squad]=backend-engineers
-TEAM_MAP[spend]=backend-engineers
 
-squad_exist_in_team() {
+get_squad_name() {
+    local raw_squad_name=$1
+    squad_name=${SQUAD_ALIAS[$raw_squad_name]}
+    if [[ -z $squad_name ]]; then
+      echo $raw_squad_name
+    fi
+    echo $squad_name
+}
+
+get_gh_team() {
     local pattern=$1
-    for key in "${(@k)TEAM_MAP}"; do
-        if [[ $key == $pattern ]]; then
-            return 0
-        fi
-    done
-    return 1
+    gh_team=${TEAM_MAP[$pattern]}
+    if [[ -z $gh_team ]]; then
+      echo null
+    fi
+    echo $gh_team
 }
 
 REPO_NAME=$(basename "$(pwd)")
 SERVICE_NAMES=(${(s: :)$(yq e '.jobs.repository-release-prod.with.helm_release_names' "$RELEASE_WORKFLOW")})
+if [[ ${#SERVICE_NAMES[@]} == 0 || "$SERVICE_NAMES" == "null" && -f "customized_helm_release_names.txt" ]]; then
+  SERVICE_NAMES=($(cat "customized_helm_release_names.txt"))
+fi
+if [[ ${#SERVICE_NAMES[@]} == 0 || "$SERVICE_NAMES" == "null" ]]; then
+  SERVICE_NAMES=(${(s: :)$(jq -r ".manual_service_names[]" $META_DATA_FILE)})
+fi
 if [[ ${#SERVICE_NAMES[@]} == 0 || "$SERVICE_NAMES" == "null" ]]; then
   SERVICE_NAMES=($REPO_NAME)
 fi
@@ -62,19 +83,18 @@ SQUAD_NAME=$(yq e '.jobs.repository-release-prod.with.argocd_state_repo' "$RELEA
 SQUAD_NAME=$(echo "$SQUAD_NAME" | cut -c 14-50)
 if [[ -z $SQUAD_NAME || "$SQUAD_NAME" == "null" ]]; then
   SQUAD_NAME=$(jq -r '.squad_name' $META_DATA_FILE)
-fi
-GH_TEAM=""
-if squad_exist_in_team "$SQUAD_NAME"; then
-  GH_TEAM=${TEAM_MAP[$SQUAD_NAME]}
 else
-  GH_TEAM="devops-engineers"
+  SQUAD_NAME="$SQUAD_NAME-squad"
 fi
+SQUAD_NAME=$(get_squad_name $SQUAD_NAME)
+GH_TEAM=$(get_gh_team $SQUAD_NAME)
 
-if [[ "$GH_TEAM" == "null" ]]; then
+if [[ "$GH_TEAM" == null ]]; then
   echo "couldn't find service owner"
   exit 1
 fi
 
+DASHBOARD=$(jq -r '.dashboard' $META_DATA_FILE)
 DESIGN_DOCUMENT=$(jq -r '.design_document' $META_DATA_FILE)
 RUNBOOK=$(jq -r '.runbook' $META_DATA_FILE)
 
@@ -95,6 +115,10 @@ fi
 
 # Loop through each subfolder in the charts directory
 for SERVICE in $SERVICE_NAMES; do
+    # Links
+    SERVICE_DASHBOARD=$(jq -r ".\"$SERVICE\".dashboard" $META_DATA_FILE)
+    SERVICE_DESIGN_DOCUMENT=$(jq -r ".\"$SERVICE\".design_document" $META_DATA_FILE)
+    SERVICE_RUNBOOK=$(jq -r ".\"$SERVICE\".runbook" $META_DATA_FILE)
     # Default dependencies
     DEPENDENCIES=(${(s: :)$(jq -r ".manual_dependencies[]" $META_DATA_FILE)})
     TOPICS=(${(s: :)$(grep Topic "config/config.go" | sed -n 's/.*default:"\([^"]*\)".*/\1/p')})
@@ -136,19 +160,22 @@ $(for tag in "${TAGS[@]}"; do
     echo "    - $tag"
 done)
   links:
-    - url: $DESIGN_DOCUMENT
-      title: Design Document
+    - title: Dashboard
+      url: $([[ "$SERVICE_DASHBOARD" != "null" ]] && echo $SERVICE_DASHBOARD || echo $DASHBOARD)
+      icon: dashboard
+    - title: Design Document
+      url: $([[ "$SERVICE_DESIGN_DOCUMENT" != "null" ]] && echo $SERVICE_DESIGN_DOCUMENT || echo $DESIGN_DOCUMENT)
       icon: menubook
-    - url: $RUNBOOK
-      title: Runbook
+    - title: Runbook
+      url: $([[ "$SERVICE_RUNBOOK" != "null" ]] && echo $SERVICE_RUNBOOK || echo $RUNBOOK)
       icon: help
 spec:
   type: $TYPE
   lifecycle: $LIFECYCLE
-  owner: group:$SQUAD_NAME-squad
+  owner: group:$SQUAD_NAME
 $(
  if (( ${#DEPENDENCIES[@]} > 0 )); then
-  echo "dependsOn:"
+  echo "  dependsOn:"
  fi
 )
 $(for resource in "${DEPENDENCIES[@]}"; do
@@ -163,4 +190,3 @@ fixed_content="${file_content%$'\n'}"
 echo "$fixed_content" > "$OUTPUT_FILE"
 
 echo "File generated: $OUTPUT_FILE"
-

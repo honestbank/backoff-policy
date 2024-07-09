@@ -15,7 +15,6 @@ module.exports = {
                 {type: 'docs', release: 'patch'},
                 {type: 'refactor', release: 'patch'},
                 {type: 'style', release: 'patch'},
-                {type: 'ci', release: 'patch'},
                 {type: 'chore', release: 'patch'}
             ]
         }],
