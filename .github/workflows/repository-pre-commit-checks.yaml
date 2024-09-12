@@ -1,11 +1,9 @@
 # DO NOT CHANGE. This file is being managed from a central repository
 # To know more simply visit https://github.com/honestbank/.github/blob/main/docs/about.md
 
-name: go-tests
+name: repository-pre-commit-checks
 
 on:
-  push:
-    branches: [main, master]
   pull_request:
     branches: [main, master]
 
@@ -13,12 +11,11 @@ jobs:
   load-secrets:
     uses: "./.github/workflows/secrets-loader.yaml"
     secrets: inherit
-
-  go-tests:
-    name: go-tests
+  repository-pre-commit-checks:
+    name: repository-pre-commit-checks
     needs:
       - load-secrets
-    uses: honestbank/workflows/.github/workflows/shared-build-go-sdk-template.yaml@main
+    uses: honestbank/workflows/.github/workflows/shared-pre-commit-checks-go.yaml@main
     secrets: inherit
     with:
       encrypted_secrets : ${{ needs.load-secrets.outputs.encrypted_secrets }}
