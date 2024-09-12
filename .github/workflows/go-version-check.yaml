@@ -1,0 +1,22 @@
+name: go-version-check
+permissions:
+  contents: read
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+
+jobs:
+  repository-go-version-check:
+    name: repository-go-version-check
+    uses: honestbank/workflows/.github/workflows/shared-go-version-check.yaml@main
+    with:
+      ignore_version_check: false
+    secrets: inherit
