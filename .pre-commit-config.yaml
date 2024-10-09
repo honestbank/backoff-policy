@@ -5,7 +5,7 @@ default_install_hook_types: [ pre-commit, commit-msg ]
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.6.0
+    rev: v5.0.0
     hooks:
       - id: end-of-file-fixer
         stages: [commit]
@@ -18,7 +18,7 @@ repos:
         stages: [commit]
         args: ["--allow-missing-credentials"]
   - repo: https://github.com/golangci/golangci-lint
-    rev: v1.60.3
+    rev: v1.61.0
     hooks:
       - id: golangci-lint
         stages: [commit]
@@ -29,7 +29,7 @@ repos:
       - id: go-imports
         stages: [commit]
   - repo: https://github.com/gitguardian/ggshield
-    rev: v1.31.0
+    rev: v1.32.1
     hooks:
       - id: ggshield
         language: python
