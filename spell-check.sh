@@ -102,7 +102,7 @@ EOF
 echo "$dictionary" > dictionary.text
 
 # Your string to check
-string=$(cat $1)
+string=$(cat "$1")
 
 echo "$string"
 

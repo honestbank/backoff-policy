@@ -69,22 +69,30 @@ get_gh_team() {
 
 REPO_NAME=$(basename "$(pwd)")
 SERVICE_NAMES=(${(s: :)$(yq e '.jobs.repository-release-prod.with.helm_release_names' "$RELEASE_WORKFLOW")})
-if [[ ${#SERVICE_NAMES[@]} == 0 || "$SERVICE_NAMES" == "null" && -f "customized_helm_release_names.txt" ]]; then
+if [[ ${#SERVICE_NAMES[@]} == 0 || "$SERVICE_NAMES" == "null" || $SERVICE_NAMES == \$* ]]; then
   SERVICE_NAMES=($(cat "customized_helm_release_names.txt"))
 fi
 if [[ ${#SERVICE_NAMES[@]} == 0 || "$SERVICE_NAMES" == "null" ]]; then
   SERVICE_NAMES=(${(s: :)$(jq -r ".manual_service_names[]" $META_DATA_FILE)})
 fi
 if [[ ${#SERVICE_NAMES[@]} == 0 || "$SERVICE_NAMES" == "null" ]]; then
+  SERVICE_NAMES=($(jq --arg p "$REPO_NAME" -r 'to_entries | .[] | .value as $version | ($version | split(".")[0] | tonumber) as $major |
+                                                                    if $major >= 2 then
+                                                                      "\($p)-\(.key)-v\($major)"
+                                                                    else
+                                                                      "\($p)-\(.key)"
+                                                                    end' .release-please-manifest.json))
+  SERVICE_NAMES+=($REPO_NAME)
+fi
+if [[ ${#SERVICE_NAMES[@]} == 0 || "$SERVICE_NAMES" == "null" ]]; then
   SERVICE_NAMES=($REPO_NAME)
 fi
 
 SQUAD_NAME=$(yq e '.jobs.repository-release-prod.with.argocd_state_repo' "$RELEASE_WORKFLOW")
-SQUAD_NAME=$(echo "$SQUAD_NAME" | cut -c 14-50)
-if [[ -z $SQUAD_NAME || "$SQUAD_NAME" == "null" ]]; then
+if [[ -z $SQUAD_NAME || "$SQUAD_NAME" == "null" || $SQUAD_NAME == \$* ]]; then
   SQUAD_NAME=$(jq -r '.squad_name' $META_DATA_FILE)
 else
-  SQUAD_NAME="$SQUAD_NAME-squad"
+  SQUAD_NAME="$(echo "$SQUAD_NAME" | cut -c 14-50)-squad"
 fi
 SQUAD_NAME=$(get_squad_name $SQUAD_NAME)
 GH_TEAM=$(get_gh_team $SQUAD_NAME)
@@ -121,6 +129,8 @@ for SERVICE in $SERVICE_NAMES; do
     SERVICE_RUNBOOK=$(jq -r ".\"$SERVICE\".runbook" $META_DATA_FILE)
     # Default dependencies
     DEPENDENCIES=(${(s: :)$(jq -r ".manual_dependencies[]" $META_DATA_FILE)})
+    # Service specific dependencies
+    DEPENDENCIES+=(${(s: :)$(jq -r ".\"$SERVICE\".manual_dependencies[]?" $META_DATA_FILE)})
     TOPICS=(${(s: :)$(grep Topic "config/config.go" | sed -n 's/.*default:"\([^"]*\)".*/\1/p')})
     for topic in $TOPICS; do
       DEPENDENCIES+=("resource:confluent-$topic")
