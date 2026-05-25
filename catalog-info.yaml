@@ -11,11 +11,14 @@ metadata:
   tags:
     - language:golang
   links:
-    - url: https://www.notion.so/honestbank/backoff-policy-4333ddff5acb4791a5697908d4ada3f2?pvs=4
-      title: Design Document
+    - title: Dashboard
+      url: null
+      icon: dashboard
+    - title: Design Document
+      url: https://www.notion.so/honestbank/backoff-policy-4333ddff5acb4791a5697908d4ada3f2?pvs=4
       icon: menubook
-    - url: https://www.notion.so/honestbank/backoff-policy-4333ddff5acb4791a5697908d4ada3f2?pvs=4
-      title: Runbook
+    - title: Runbook
+      url: https://www.notion.so/honestbank/backoff-policy-4333ddff5acb4791a5697908d4ada3f2?pvs=4
       icon: help
 spec:
   type: library
