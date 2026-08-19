@@ -5,9 +5,7 @@
 # Use template from https://github.com/honestbank/workflows/tree/main/examples/repository-workflows
 ---
 name: "repository-semantic-pr"
-permissions:
-  contents: write
-  pull-requests: write
+permissions: {}
 
 on: # yamllint disable-line rule:truthy
   pull_request:
@@ -20,5 +18,7 @@ on: # yamllint disable-line rule:truthy
 jobs:
   repository-semantic-pr:
     name: repository-semantic-pr
+    permissions:
+      pull-requests: read
     uses: honestbank/workflows/.github/workflows/shared-semantic-pr.yaml@main
     secrets: inherit
