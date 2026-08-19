@@ -9,9 +9,6 @@ on:
 
 jobs:
   load-secrets:
-    # File-sync PRs (sync_* branches) only carry centrally-managed boilerplate;
-    # skipped jobs still satisfy required status checks, so automerge can proceed.
-    if: ${{ !startsWith(github.head_ref, 'sync_') }}
     uses: "./.github/workflows/secrets-loader.yaml"
     secrets: inherit
   repository-pre-commit-checks:
