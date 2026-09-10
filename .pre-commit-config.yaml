@@ -1,53 +1,47 @@
 # DO NOT CHANGE. This file is being managed from a central repository
 # To know more simply visit https://github.com/honestbank/.github/blob/main/docs/about.md
 
-default_install_hook_types: [ pre-commit, commit-msg ]
+default_install_hook_types: [pre-commit, commit-msg]
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.6.0
+    rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c  # frozen: v6.0.0
     hooks:
       - id: end-of-file-fixer
-        stages: [commit]
+        stages: [pre-commit]
       - id: trailing-whitespace
-        stages: [commit]
+        stages: [pre-commit]
       - id: check-yaml
-        stages: [commit]
+        stages: [pre-commit]
         args: ["--allow-multiple-documents"]
       - id: detect-aws-credentials
-        stages: [commit]
+        stages: [pre-commit]
         args: ["--allow-missing-credentials"]
   - repo: https://github.com/golangci/golangci-lint
-    rev: v1.60.3
+    rev: c0d3ddc9cf3faa61a4e378e879ece580256d76e5  # frozen: v2.12.2
     hooks:
       - id: golangci-lint
-        stages: [commit]
+        stages: [pre-commit]
         args: ["--timeout=10m"]
   - repo: https://github.com/TekWizely/pre-commit-golang
-    rev: v1.0.0-rc.1
+    rev: f298c082154b2cb239fac06a4f452368e66e66dd  # frozen: v1.0.0-rc.4
     hooks:
       - id: go-imports
-        stages: [commit]
-  - repo: https://github.com/gitguardian/ggshield
-    rev: v1.31.0
+        stages: [pre-commit]
+        args:
+          - "-w"
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: 2ca41cc1372d1e939a6a879f18cdc19fc1cac1ce  # frozen: v8.30.0
     hooks:
-      - id: ggshield
-        language: python
-        stages: [commit]
-        args: ["secret", "scan", "pre-commit"]
+      - id: gitleaks
+        stages: [pre-commit]
   - repo: local
     hooks:
       - id: generate-secrets-loader
         name: generate-secrets-loader
         entry: ./secrets-loader.generator.sh
         language: script
-        stages: [commit]
-      - id: generate-catalog
-        name: generate-catalog
-        entry: ./catalog-info.generator.sh
-        language: script
-        pass_filenames: false
-        stages: [commit]
+        stages: [pre-commit]
       - id: commit-msg-spell-check
         name: commit-msg-spell-check
         entry: ./spell-check.sh
@@ -57,4 +51,4 @@ repos:
         name: Append Ticket ID to Commit Message
         entry: ./append-ticket-id.sh
         language: script
-        stages: [ commit-msg ]
+        stages: [commit-msg]
