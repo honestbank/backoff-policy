@@ -14,6 +14,7 @@ jobs:
   repository-experiment-verification:
     name: repository-experiment-verification
     uses: honestbank/workflows/.github/workflows/shared-experiment-verification.yaml@main
-    secrets: inherit
+    secrets:
+      ENGINEERING_GITHUB_PERSONAL_ACCESS_TOKEN: ${{ secrets.ENGINEERING_GITHUB_PERSONAL_ACCESS_TOKEN }}
     with:
       experiment_required: false
