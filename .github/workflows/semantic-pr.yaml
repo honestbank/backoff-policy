@@ -1,13 +1,15 @@
-# DO NOT CHANGE. This file is being managed from a central repository
-# To know more simply visit https://github.com/honestbank/.github/blob/main/docs/about.md
-
 # yamllint disable rule:line-length
-# Use template from https://github.com/honestbank/workflows/tree/main/examples/repository-workflows
+# Public-repo variant of repository-semantic-pr.
+# Public repos cannot call reusable workflows from the private honestbank/workflows
+# repo, so the semantic PR title check is inlined here. The job's display name
+# `repository-semantic-pr / shared-semantic-pr` produces the GitHub status-check
+# context required by the branch ruleset, matching what the shared workflow
+# emits on private repos.
 ---
 name: "repository-semantic-pr"
 permissions: {}
 
-on: # yamllint disable-line rule:truthy
+on:  # yamllint disable-line rule:truthy
   pull_request:
     types:
       - opened
@@ -16,9 +18,17 @@ on: # yamllint disable-line rule:truthy
       - synchronize
 
 jobs:
-  repository-semantic-pr:
-    name: repository-semantic-pr
+  shared-semantic-pr:
+    name: "repository-semantic-pr / shared-semantic-pr"
     permissions:
       pull-requests: read
-    uses: honestbank/workflows/.github/workflows/shared-semantic-pr.yaml@main
-    secrets: inherit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: amannn/action-semantic-pull-request@48f256284bd46cdaab1048c3721360e808335d50  # v6.1.1
+        name: Semantic Pull Request
+        # Aikido autofix PRs can have titles with no conventional-commit
+        # prefix, for example "[Aikido] AI Fix for ...". Skip the semantic
+        # title validation for these PRs.
+        if: ${{ !startsWith(github.event.pull_request.title, '[Aikido]') }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
