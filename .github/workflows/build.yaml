@@ -18,6 +18,9 @@ concurrency:
   group: "${{ github.repository }}-${{ github.workflow }}-${{ github.ref }}"
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
+env:
+  GOPRIVATE: github.com/honestbank
+
 jobs:
   get-go-version:
     name: Get Go Version
@@ -58,6 +61,44 @@ jobs:
         run: |
           set -o pipefail
           go test -race -coverprofile=coverage.txt -covermode=atomic -json ./... | tee test-report.json
+
+      # Some repositories hold more than one Go module, for example an SDK with
+      # extension modules beside it. The step above only covers the root module,
+      # because `go test ./...` never descends into a nested module.
+      #
+      # A nested module is tested only when its own Makefile declares a `test`
+      # target. That keeps demonstration and example modules out of CI, and it
+      # lets a module say how it wants to be tested, which matters when a module
+      # needs Docker Compose or an integration build tag. Repositories with a
+      # single module find nothing here and behave exactly as before.
+      - name: Test nested modules
+        shell: bash
+        run: |
+          set -euo pipefail
+          [ -f coverage.txt ] || echo "mode: atomic" > coverage.txt
+          while IFS= read -r module; do
+            directory=$(dirname "${module}")
+            if [ "${directory}" = "." ]; then
+              continue
+            fi
+            if [ ! -f "${directory}/Makefile" ]; then
+              echo "Skipping ${directory}: no Makefile."
+              continue
+            fi
+            if ! grep -qE '^test:' "${directory}/Makefile"; then
+              echo "Skipping ${directory}: the Makefile declares no test target."
+              continue
+            fi
+            echo "Testing ${directory}"
+            make -C "${directory}" test
+            for profile in cover.out coverage.txt coverage.out; do
+              if [ -f "${directory}/${profile}" ]; then
+                tail -n +2 "${directory}/${profile}" >> coverage.txt
+                rm "${directory}/${profile}"
+                break
+              fi
+            done
+          done < <(find . -name go.mod -not -path './vendor/*' -not -path '*/testdata/*' | sort)
 
       - name: sonarcloud-scan
         uses: sonarsource/sonarqube-scan-action@22918119ff8e1ca75a623e15c8296b6ea4fbe28f  # v8.2.1
