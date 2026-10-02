@@ -38,3 +38,15 @@ func main() {
 	}
 }
 ```
+
+## Context-aware execution
+
+`Execute` sleeps, and nothing can end that sleep. The policies of `NewBackoff` and `NewExponentialBackoffPolicy` also implement `ContextBackoffPolicy`. Its `ExecuteWithContext` waits the same way, but a done context ends the wait, and the callback then runs at once. This lets a worker stop without waiting for the full backoff.
+
+```go
+if p, ok := policy.(backoff_policy.ContextBackoffPolicy); ok {
+	p.ExecuteWithContext(ctx, work)
+} else {
+	policy.Execute(work)
+}
+```
